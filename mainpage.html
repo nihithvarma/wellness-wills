@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three Quadrant Wellness Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .quadrant {
+            flex: 1;
+            min-width: 300px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .quadrant h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        .quadrant input, .quadrant textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        .quadrant input[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            border: none;
+        }
+
+        .quadrant input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+
+        .recipes {
+            list-style: none;
+            padding: 0;
+        }
+
+        .recipes li {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .recipe-details {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        @media (max-width: 768px) {
+            .quadrant {
+                flex: 1 1 100%;
+            }
+        }
+
+        #recipe-quadrant {
+            display: none;
+        }
+
+        /* Style for the activity tracker button */
+        #activity-tracker-button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #activity-tracker-button:hover {
+            background-color: #45a049;
+        }
+
+        /* Hide the activity tracker form initially */
+        #activity-form {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Three Quadrant Wellness Page</h1>
+    <div class="container">
+
+        <!-- First Quadrant: Vegetable Input -->
+        <div class="quadrant">
+            <h2>Vegetable Input</h2>
+            <form id="vegetable-form">
+                <label for="vegetable">Vegetable Name:</label>
+                <input type="text" id="vegetable" name="vegetable" placeholder="Enter vegetable name" required>
+
+                <label for="quantity">Quantity (in grams):</label>
+                <input type="number" id="quantity" name="quantity" placeholder="Enter quantity" required>
+
+                <input type="submit" value="Add to Recipe">
+            </form>
+            <ul id="vegetable-list"></ul>
+        </div>
+
+        <!-- Second Quadrant: Healthy Recipes -->
+        <div class="quadrant" id="recipe-quadrant">
+            <h2>Healthy Recipes</h2>
+            <ul class="recipes" id="recipe-list"></ul>
+        </div>
+
+        <!-- Activity Tracker Button -->
+        <button id="activity-tracker-button" onclick="toggleActivityForm()">Open Activity Tracker</button>
+
+        <!-- Third Quadrant: Activity Tracker Form (Initially Hidden) -->
+        <div class="quadrant" id="activity-form">
+            <h2>Activity Tracker</h2>
+            <form id="activity-form-content">
+                <label for="age">Age:</label>
+                <input type="number" id="age" name="age" placeholder="Enter age" required>
+
+                <label for="height">Height (in cm):</label>
+                <input type="number" id="height" name="height" placeholder="Enter height" required>
+
+                <label for="weight">Weight (in kg):</label>
+                <input type="number" id="weight" name="weight" placeholder="Enter weight" required>
+
+                <input type="submit" value="Get Activity Suggestions">
+            </form>
+            <ul id="activity-suggestions"></ul>
+        </div>
+
+    </div>
+
+    <script>
+        const vegetableData = [];
+        const recipesDataset = [
+            {
+                name: "Vegetable Stir Fry",
+                ingredients: ["carrot", "broccoli", "bell pepper"],
+                instructions: "Sauté vegetables in olive oil with garlic and soy sauce."
+            },
+            {
+                name: "Tomato Soup",
+                ingredients: ["tomato", "onion", "garlic", "basil"],
+                instructions: "Cook tomatoes, onions, and garlic in a pot, blend with basil, and serve hot."
+            },
+            {
+                name: "Grilled Zucchini",
+                ingredients: ["zucchini", "olive oil", "garlic", "parsley"],
+                instructions: "Grill zucchini slices with olive oil, garlic, and garnish with parsley."
+            }
+        ];
+
+        // Handle Vegetable Form Submission
+        document.getElementById("vegetable-form").addEventListener("submit", function(event) {
+            event.preventDefault();
+            const vegetable = document.getElementById("vegetable").value.toLowerCase();
+            const quantity = parseInt(document.getElementById("quantity").value, 10);
+            vegetableData.push({ name: vegetable, quantity });
+
+            const list = document.getElementById("vegetable-list");
+            const listItem = document.createElement("li");
+            listItem.textContent = `${vegetable} - ${quantity} grams`;
+            list.appendChild(listItem);
+
+            updateRecipes();
+            document.getElementById("vegetable-form").reset();
+        });
+
+        // Update Recipes Based on User Input
+        function updateRecipes() {
+            const recipeList = document.getElementById("recipe-list");
+            const recipeQuadrant = document.getElementById("recipe-quadrant");
+
+            // Clear existing recipes
+            recipeList.innerHTML = "";
+
+            // Match vegetables with recipes
+            vegetableData.forEach(veg => {
+                recipesDataset.forEach(recipe => {
+                    if (recipe.ingredients.includes(veg.name)) {
+                        const recipeItem = document.createElement("li");
+                        recipeItem.innerHTML = `<strong>Recipe:</strong> ${recipe.name} - Quantity: ${veg.quantity} grams<br>
+                        <div class='recipe-details'><strong>Instructions:</strong> ${recipe.instructions}</div>`;
+                        recipeList.appendChild(recipeItem);
+                    }
+                });
+            });
+
+            // Show recipe quadrant if there are recipes
+            if (vegetableData.length > 0) {
+                recipeQuadrant.style.display = "block";
+            } else {
+                recipeQuadrant.style.display = "none";
+            }
+        }
+
+        // Handle Activity Form Submission (existing logic remains the same)
+        document.getElementById("activity-form-content").addEventListener("submit", function(event) {
+            event.preventDefault();
+            const age = parseInt(document.getElementById("age").value, 10);
+            const height = parseInt(document.getElementById("height").value, 10);
+            const weight = parseInt(document.getElementById("weight").value, 10);
+
+            const activitySuggestions = document.getElementById("activity-suggestions");
+            activitySuggestions.innerHTML = "";
+
+            if (age && height && weight) {
+                const bmi = (weight / ((height / 100) ** 2)).toFixed(2);
+                let suggestion = "";
+
+                if (age < 18) {
+                    suggestion = "As a teenager, focus on fun activities like swimming, dancing, or sports.";
+                } else if (age >= 18 && age <= 40) {
+                    suggestion = "At your age, aim for a balance of cardio and strength training. Try running, cycling, or weightlifting.";
+                } else if (age >= 41 && age <= 60) {
+                    suggestion = "In your 40s and 50s, focus on maintaining muscle mass with low-impact exercises like walking, yoga, and light strength training.";
+                } else {
+                    suggestion = "In your 60s and beyond, prioritize joint-friendly activities like walking, swimming, and stretching exercises.";
+                }
+
+                let bmiSuggestion = "";
+                if (bmi < 18.5) {
+                    bmiSuggestion = "Your BMI is below normal. Focus on weight training and a calorie-rich diet.";
+                } else if (bmi >= 18.5 && bmi < 24.9) {
+                    bmiSuggestion = "Your BMI is normal. Maintain your health with a mix of cardio and strength exercises.";
+                } else if (bmi >= 25) {
+                    bmiSuggestion = "Your BMI is above normal. Include more cardio exercises and a balanced diet.";
+                }
+
+                const listItem = document.createElement("li");
+                listItem.textContent = `BMI: ${bmi} - ${bmiSuggestion} ${suggestion}`;
+                activitySuggestions.appendChild(listItem);
+
+                const exerciseItem = document.createElement("li");
+                exerciseItem.textContent = "Suggested Exercises: Jogging, Yoga, Strength Training, or Aerobics based on your fitness level.";
+                activitySuggestions.appendChild(exerciseItem);
+            }
+        });
+
+        // Toggle the visibility of the activity form
+        function toggleActivityForm() {
+            const activityForm = document.getElementById("activity-form");
+            activityForm.style.display = activityForm.style.display === "block" ? "none" : "block";
+        }
+    </script>
+</body>
+</html>
+
